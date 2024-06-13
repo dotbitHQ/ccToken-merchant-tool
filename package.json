@@ -1,0 +1,21 @@
+{
+  "name": "cct-js-demo",
+  "version": "1.0.0",
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "scripts": {
+    "test": "ts-node ./src/index.ts"
+  },
+  "dependencies": {
+    "@nervosnetwork/ckb-sdk-core": "^0.109.1",
+    "@nervosnetwork/ckb-sdk-rpc": "^0.109.1",
+    "@nervosnetwork/ckb-sdk-utils": "^0.109.1",
+    "@nervosnetwork/ckb-types": "^0.109.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

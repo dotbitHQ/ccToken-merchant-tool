@@ -1,0 +1,29 @@
+import basic;
+
+table GovernanceMembers {
+    parent_id: Bytes,
+    lock_args: Bytes,
+    multisig_args: Bytes,
+    members: BytesVec,
+}
+
+table Tick {
+    tick_type: byte,
+    token_id: Bytes,
+    value: Uint128,
+    merchant: Script,
+    coin_type: Bytes,
+    tx_hash: Bytes,
+    receipt_addr: Bytes,
+}
+
+// Omni lock schemas
+array Auth[byte; 21];
+
+option IdentityOpt (Bytes);
+
+table OmniLockWitnessLock {
+    signature: BytesOpt,
+    omni_identity: IdentityOpt,
+    preimage: BytesOpt,
+}
