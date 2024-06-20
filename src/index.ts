@@ -443,7 +443,7 @@ function genTickCellData(merchantAddress: string, tokenId: string, coinType: str
     hash_type: 1, // 0x01 represents type, 0x00 represents data
     args: toArrayBuffer(Buffer.from(merchantLock.args.slice(2), 'hex'))
   }
-  const valueBuffer = Buffer.from(value.toString(16), 'hex')
+  const valueBuffer = bigIntToUint128LE(value)
 
   // console.log('merchant_lock:', merchantLockMol)
   // console.log(Buffer.from(types.SerializeScript(merchantLockMol)).toString('hex'))
@@ -481,4 +481,23 @@ function toArrayBuffer(buffer: Buffer, length?: number) {
   uint8Array.set(buffer);
   // Return the ArrayBuffer
   return arrayBuffer;
+}
+
+function bigIntToUint128LE(num: BigInt) {
+  let hexString = num.toString(16);
+  if (hexString.length % 2 !== 0) {
+    hexString = '0' + hexString;
+  }
+
+  let buffer = Buffer.from(hexString, 'hex');
+  if (buffer.length < 16) {
+    const padding = Buffer.alloc(16 - buffer.length, 0);
+    buffer = Buffer.concat([padding, buffer], 16);
+  } else if (buffer.length > 16) {
+    throw new Error('BigInt is too large to fit in a uint128');
+  }
+
+  buffer = buffer.reverse();
+
+  return buffer;
 }
