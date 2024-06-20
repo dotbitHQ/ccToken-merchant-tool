@@ -9,18 +9,22 @@ import axios from 'axios'
 import * as types from './schemas/cell.js';
 
 program
+  .option('-f, --fee <fee>', 'The total fee of the CKB transaction', '10000')
   .option('-p, --private-key <privateKey>', 'Merchant private key. Please use environment variable MERCHANT_PRIVATE_KEY instead in production environment.')
   .option('-a, --merchant-address <address>', 'Merchant address')
   .option('-u, --rpc-url <url>', 'The base url of CKB RPC.')
-  .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.', 'BTC')
-  .option('-t, --tx-hash <hash>', 'The hash of the BTC transaction')
-  .option('-f, --fee <fee>', 'The fee of the transaction', '10000')
-  .option('-v, --value <value>', 'The value of the ccBTC to mint')
-  .option('-V, --verbose', 'Show verbose debug messages', false)
+  .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
+  .option('-t, --tx-hash <hash>', 'The hash of the {CoinType} transaction.')
+  .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')
+  .option('-V, --verbose', 'Show verbose debug messages.', false)
 
 program.parse()
 
 const options = program.opts()
+
+if (options.verbose) {
+  console.log('Options:', options)
+}
 
 let merchantPrivateKey: string
 if (options.privateKey) {
@@ -69,26 +73,6 @@ if (!options.value || isNaN(Number(options.value))) {
   process.exit(1)
 }
 
-
-const inputs: any = [
-  // Any cell that have more than 551CKB capacity
-  {
-    lock: {
-      codeHash:
-        "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
-      hashType: "type",
-      args: "0xa1b136c2cd411b757e5911c554e4c7612f69d00a",
-    },
-    outPoint: {
-      txHash:
-        "0x5a89e6d23184431ecfba83a78a6e18bcebbca67980e328f8a1c9d1c1e0617103",
-      index: "0x2",
-    },
-    capacity: "0x10ed41ab45",
-    data: "0x",
-  },
-];
-
 type NetworkParams = typeof MAINNET
 
 const MAINNET = {
@@ -108,7 +92,9 @@ const MAINNET = {
     typeId: '0x2e01a6db6d332607e2b604cb58104678bd7bb3a2d5093418cdc53be976c8a18b',
   },
   alwaysSuccessAddress: 'ckb1qqcratfhhe0whl8n2pyyw9248r9kyw3x7gmkp80jf0ffvagvzgc8sqgdzm4fw',
-  tokenId: '0x68e64ba4b0daeeec45c1f983d6d574fca370442cafb805bc4265ef74870a4ac8',
+  tokenId: {
+    'BTC': '0x68e64ba4b0daeeec45c1f983d6d574fca370442cafb805bc4265ef74870a4ac8'
+  },
   cellDeps: [
     // joy-id
     {
@@ -146,7 +132,9 @@ const TESTNET: NetworkParams = {
     typeId: '0x2022bdd02de3fc45e8776d2f0416cd887935c01c981a9e496fc74c00f7062f97',
   },
   alwaysSuccessAddress: 'ckt1qzqmth635x0qaytkuujgmdrrc67zlgd0c57u2727gyp6xdnskzlj7qgh6rt3u',
-  tokenId: '0x3b6224e621410370887db7e3d95f63d9c760d7f56ee864521403c99e8b4f34b8',
+  tokenId: {
+    'BTC': '0x3b6224e621410370887db7e3d95f63d9c760d7f56ee864521403c99e8b4f34b8'
+  },
   cellDeps: [
     // joy-id
     {
@@ -173,6 +161,12 @@ const transactionFee = BigInt(options.fee)
 
 ;(async () => {
   const [_network, networkParams] = await selectCurrentNetwork()
+
+  if (!(networkParams.tokenId as any)[options.coinType]) {
+    console.error('Unsupported coin type:', options.coinType)
+    process.exit(1)
+  }
+
   const tickCellTypeOutPoint = await findTypeScriptOutPoint(networkParams.tickCellType.typeScript)
   const configCellOutPoint = await findConfigCell(networkParams.configCellType.typeId)
   const governanceMemberCellTypeOutPoint = await findGovernanceMemberCell(networkParams.governanceMemberCellType.typeId)
@@ -222,7 +216,7 @@ const transactionFee = BigInt(options.fee)
   })
 
   rawTx.outputs[0] = toTickCell(rawTx.outputs[0], networkParams.tickCellType.typeId)
-  rawTx.outputsData[0] = genTickCellData(options.merchantAddress, networkParams.tokenId, options.coinType, options.txHash, BigInt(options.value))
+  rawTx.outputsData[0] = genTickCellData(options.merchantAddress, (networkParams.tokenId as any)[options.coinType], options.coinType, options.txHash, BigInt(options.value))
 
   // 0x00726571756573745f6d696e74 represents [prefix, request_mint] in binary format,
   // which is a key symbol to represent the intention of the transaction.
