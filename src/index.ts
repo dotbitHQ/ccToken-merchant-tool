@@ -11,7 +11,7 @@ import * as types from './schemas/cell.js';
 program
   .option('-p, --private-key <privateKey>', 'Merchant private key. Please use environment variable MERCHANT_PRIVATE_KEY instead in production environment.')
   .option('-a, --merchant-address <address>', 'Merchant address')
-  .option('-u, --rpc-url [url]', 'The base url of CKB RPC.', 'http://127.0.0.1:8114')
+  .option('-u, --rpc-url <url>', 'The base url of CKB RPC.')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.', 'BTC')
   .option('-t, --tx-hash <hash>', 'The hash of the BTC transaction')
   .option('-f, --fee <fee>', 'The fee of the transaction', '10000')
@@ -33,7 +33,7 @@ if (options.privateKey) {
 }
 
 let rpcUrl: string
-if (process.env.CKB_RPC_URL) {
+if (process.env.CKB_RPC_URL && !options.rpcUrl) {
   rpcUrl = process.env.CKB_RPC_URL
 } else if (options.rpcUrl) {
   rpcUrl = options.rpcUrl
@@ -113,7 +113,7 @@ const MAINNET = {
     // joy-id
     {
       outPoint: {
-        txHash: '0x4dcf3f3b09efac8995d6cbee87c5345e812d310094651e0c3d9a730f32dc9263',
+        txHash: '0xf05188e5f3a6767fc4687faf45ba5f1a6e25d3ada6129dae8722cb282f262493',
         index: '0x0'
       },
       depType: 'depGroup'
@@ -121,7 +121,7 @@ const MAINNET = {
     // secp256k1_blake160_sighash_all
     {
       outPoint: {
-        txHash: '0xf8de3bb47d055cdf460d93a2a6e1b05f7432f9777c8c474abf4eec1d4aee5d37',
+        txHash: '0x71a7ba8fc96349fea0ed3a5c47992e3b4084b031a42264a018e0072e8172e46c',
         index: '0x0'
       },
       depType: 'depGroup'
@@ -240,8 +240,26 @@ const transactionFee = BigInt(options.fee)
     console.log(JSON.stringify(rpc_format_tx, null, 2))
   }
 
-  const txHash = await ckb.rpc.sendTransaction(signedTx)
-  console.log(txHash)
+  try {
+    const txHash = await ckb.rpc.sendTransaction(signedTx)
+    console.log(txHash)
+  } catch (e: any) {
+    try {
+      let msg = JSON.parse(e.message)
+      if (msg.code == -302) {
+        if (msg.message.includes('.Lock')) {
+          console.error('Transaction rejected by CKB node. It is most likely due to the signature is invalid, please refer to original message:', msg.message)
+        } else {
+          console.error('Transaction rejected by CKB node. It is due to some contract validation failsure, please refer to original message:', msg.message)
+        }
+      } else {
+        console.error('Transaction rejected by CKB node. It is due to some unpredict failsure, please refer to original message', msg)
+      }
+    } catch (_) {
+      console.error('Failed to send transaction with unkown error:', e.message)
+    }
+    process.exit(1)
+  }
 })();
 
 async function selectCurrentNetwork(): Promise<['mainnet' | 'testnet', NetworkParams]>{
@@ -269,6 +287,7 @@ async function selectCurrentNetwork(): Promise<['mainnet' | 'testnet', NetworkPa
     }
 
     if (options.verbose) {
+      console.log('🌏 Genesis hash:', body.genesis_hash)
       console.log('🌏 Current network:', network)
     }
   } catch (e: any) {
