@@ -3,7 +3,7 @@ import { default as CKB } from '@nervosnetwork/ckb-sdk-core'
 import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 import { addressToScript } from '@nervosnetwork/ckb-sdk-utils'
 
-import { deepClone, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, genTickCellData, toTickCell, toXudtCell, u128ToLEHex } from './util'
+import { deepClone, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, toXudtCell, u128ToLEHex } from './util'
 import { CONTEXT, XUDT_CELL_CAPACITY } from './const'
 
 export async function transferCommand(options: any, _command: Command) {
@@ -19,10 +19,21 @@ export async function transferCommand(options: any, _command: Command) {
   if (!options.to) {
     console.error('The CKB address of the receiver is required.')
     process.exit(1)
+  } else {
+    try {
+      addressToScript(options.to)
+    } catch (e: any) {
+      console.error('Invalid to address:', options.to)
+      process.exit(1)
+    }
   }
 
   try {
-    BigInt(options.value)
+    let value = BigInt(options.value)
+    if (value < 0 || value > BigInt(2) ** BigInt(128)) {
+      console.error('The {CoinType} value must be a valid u128 value.')
+      process.exit(1)
+    }
   } catch (_) {
     console.error('The {CoinType} value for transfer must be specified as an unsigned integer without decimals.')
     process.exit(1)
@@ -94,16 +105,10 @@ export async function transferCommand(options: any, _command: Command) {
       console.log(`Create change XudtCell with capacity ${XUDT_CELL_CAPACITY} and value ${xudtChange}`)
     }
 
-    rawTx.outputs[2] = rawTx.outputs[1]
-    rawTx.outputsData[2] = rawTx.outputsData[1]
-
-    // Split the capacity for two XudtCells
-    rawTx.outputs[0].capacity = '0x' + XUDT_CELL_CAPACITY.toString(16)
-
     // Create the change XudtCell
-    rawTx.outputs[1] = deepClone(rawTx.outputs[0])
+    rawTx.outputs.splice(1, 0, deepClone(rawTx.outputs[0]))
+    rawTx.outputsData.splice(1, 0, u128ToLEHex(xudtChange))
     rawTx.outputs[1].lock = addressToScript(CONTEXT.merchantAddress)
-    rawTx.outputsData[1] = u128ToLEHex(xudtChange)
   }
 
   // 0x007472616e73666572 represents [prefix, transfer] in binary format,
@@ -121,8 +126,8 @@ export async function transferCommand(options: any, _command: Command) {
   }
 
   try {
-    // const txHash = await ckb.rpc.sendTransaction(signedTx)
-    // console.log(txHash)
+    const txHash = await ckb.rpc.sendTransaction(signedTx)
+    console.log(txHash)
   } catch (e: any) {
     try {
       let msg = JSON.parse(e.message)

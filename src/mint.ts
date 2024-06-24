@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { default as CKB } from '@nervosnetwork/ckb-sdk-core'
 import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 
-import { findConfigCell, findGovernanceMemberCell, findMerchantNormalCells, findTypeScriptOutPoint, genTickCellData, selectCurrentNetwork, toTickCell } from './util'
+import { findConfigCell, findGovernanceMemberCell, findMerchantNormalCells, findTypeScriptOutPoint, genTickCellData, toTickCell } from './util'
 import { TICK_CELL_CAPACITY, CONTEXT } from './const'
 
 export async function mintCommand(options: any, _command: Command) {
@@ -21,7 +21,11 @@ export async function mintCommand(options: any, _command: Command) {
   }
 
   try {
-    BigInt(options.value)
+    let value = BigInt(options.value)
+    if (value < 0 || value > BigInt(2) ** BigInt(128)) {
+      console.error('The {CoinType} value must be a valid u128 value.')
+      process.exit(1)
+    }
   } catch (_) {
     console.error('The {CoinType} value for minting must be specified as an unsigned integer without decimals.')
     process.exit(1)
@@ -82,7 +86,7 @@ export async function mintCommand(options: any, _command: Command) {
   })
 
   rawTx.outputs[0] = toTickCell(rawTx.outputs[0], networkParams.tickCellType.typeId)
-  rawTx.outputsData[0] = genTickCellData(CONTEXT.merchantAddress, (networkParams.tokenId as any)[options.coinType], options.coinType, options.txHash, BigInt(options.value))
+  rawTx.outputsData[0] = genTickCellData('mint', CONTEXT.merchantAddress, (networkParams.tokenId as any)[options.coinType], options.coinType, BigInt(options.value), options.txHash )
 
   // 0x00726571756573745f6d696e74 represents [prefix, request_mint] in binary format,
   // which is a key symbol to represent the intention of the transaction.

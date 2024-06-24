@@ -4,7 +4,7 @@ import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 import resultFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/resultFormatter'
 
 import * as types from './schemas/cell.js';
-import { CONTEXT, MAINNET, NetworkParams, TESTNET } from './const';
+import { CONTEXT, MAINNET, NetworkParams, TESTNET, TICK_CELL_CAPACITY, XUDT_CELL_CAPACITY } from './const';
 
 export async function setupContext(options: any) {
   CONTEXT.verbose = options.verbose
@@ -276,6 +276,7 @@ export async function findMerchantXudtCells(merchantAddress: string, tokenId: st
 
 export function toTickCell(cell: any, tickCellTypeId: string) {
   // The TickCell's capacity, lock and type are always the same value.
+  cell.capacity = '0x' + TICK_CELL_CAPACITY.toString(16)
   cell.type = {
     codeHash: tickCellTypeId,
     hashType: 'type',
@@ -286,6 +287,8 @@ export function toTickCell(cell: any, tickCellTypeId: string) {
 }
 
 export function toXudtCell(cell: any, xudtCellTypeId: string, tokenId: string) {
+  // The XudtCell's capacity, lock and type are always the same value.
+  cell.capacity = '0x' + XUDT_CELL_CAPACITY.toString(16)
   cell.type = {
     codeHash: xudtCellTypeId,
     hashType: 'type',
@@ -295,7 +298,7 @@ export function toXudtCell(cell: any, xudtCellTypeId: string, tokenId: string) {
   return cell
 }
 
-export function genTickCellData(merchantAddress: string, tokenId: string, coinType: string, txHash: string, value: BigInt) {
+export function genTickCellData(type: string, merchantAddress: string, tokenId: string, coinType: string, value: BigInt, txHash?: string) {
   const merchantLock = addressToScript(merchantAddress)
   const merchantLockMol = {
     code_hash: toArrayBuffer(Buffer.from(merchantLock.codeHash.slice(2), 'hex')),
@@ -309,13 +312,13 @@ export function genTickCellData(merchantAddress: string, tokenId: string, coinTy
 
   const tickMol = Buffer.from(types.SerializeTick({
     // 0x00 represents this is a mint tick
-    tick_type: toArrayBuffer(Buffer.from([0])),
+    tick_type: toArrayBuffer(Buffer.from([ type == 'mint' ? 0 : 1 ])),
     token_id: toArrayBuffer(Buffer.from(tokenId.slice(2), 'hex')),
     value: toArrayBuffer(valueBuffer, 16), // 100000000 sats in LE == 1 ccBTC
     merchant: merchantLockMol,
     // Be aware the following fields are encoded as utf-8 strings
     coin_type: toArrayBuffer(Buffer.from(coinType, 'utf-8')),
-    tx_hash: toArrayBuffer(Buffer.from(txHash, 'utf-8')),
+    tx_hash: txHash ? toArrayBuffer(Buffer.from(txHash, 'utf-8')) : new ArrayBuffer(0),
     // This field can be empty when request mint.
     receipt_addr: toArrayBuffer(Buffer.from([])),
   }))
