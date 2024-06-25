@@ -15,6 +15,7 @@ program
 
 // Mint command
 program.command('mint')
+  .description('Mint xUDT token to the merchant address.')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
   .option('-t, --tx-hash <hash>', 'The hash of the {CoinType} transaction.')
   .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')
@@ -25,6 +26,7 @@ program.command('mint')
 
 // Burn command
 program.command('burn')
+  .description('Burn xUDT token from the merchant address.')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
   .option('-t, --to <address>', 'The multisig CKB address of the custodians.')
   .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')
@@ -35,6 +37,7 @@ program.command('burn')
 
 // Transfer command
 program.command('transfer')
+  .description('Transfer xUDT token from the merchant address to another address.')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
   .option('-t, --to <address>', 'The CKB address of the receiver.')
   .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')

@@ -47,22 +47,25 @@ Commands:
   help [command]                    display help for command
 ```
 
-There are three subcommands: `mint`, `burn`, and `transfer`. Each subcommand has its own parameters.
+There are three subcommands: `mint`, `burn`, and `transfer`. All of them have common parameters:
 
-- `mint`: Mint xUDT token to the merchant address.
-- `burn`: Burn xUDT token from the merchant address.
-- `transfer`: Transfer xUDT token from the merchant address to another address.
+- `--fee` is the total fee of the CKB transaction.
+- `--private-key` is the private key of the merchant.
+- `--merchant-address` is the address of the merchant.
+- `--rpc-url` is the base url of CKB RPC.
 
-Some of the parameters can also be passed as environment variables:
+Some of the common parameters can also be passed as environment variables:
 
 - `MERCHANT_PRIVATE_KEY`: Merchant private key.
 - `CKB_RPC_URL`: The CKB RPC url.
 
 **Please note that the `--value` parameter always requires a u128 type value. For example, if you wish to mint 0.1 ccBTC with 8 decimal places, you should input `10000000` (10,000,000) as the value. The `--value` cannot be negative or exceed the maximum u128 value.**
 
+Each subcommand has its own parameters. Please refer to the following sections for instructions on how to use them.
+
 ### Minting
 
-For example, to mint 0.1 BTC token, and the private key is passed as environment variable, one can use the following command:
+To mint 0.1 BTC token, and the private key is passed as environment variable, one can use the following command:
 
 ```bash
 {your_binary_path} --rpc-url http://localhost:8114 \
@@ -75,7 +78,7 @@ mint \
 
 ### Transfer
 
-For example, to mint 1 BTC token, and the private key is passed as environment variable, one can use the following command:
+To transfer 0.1 BTC token, and the private key is passed as environment variable, one can use the following command:
 
 ```bash
 {your_binary_path} --rpc-url http://localhost:8114 \
@@ -83,5 +86,28 @@ For example, to mint 1 BTC token, and the private key is passed as environment v
 transfer \
 --coin-type BTC \
 --to ckt1... \
---value 1000000
+--value 10000000
 ```
+
+### Burning
+
+To burn 0.1 BTC token, and the private key is passed as environment variable, one can use the following command:
+
+```bash
+{your_binary_path} --rpc-url http://localhost:8114 \
+--merchant-address ckt1... \
+burn \
+--to ckt1... \
+--coin-type BTC \
+--value 10000000
+```
+
+Please note that the `--to` parameter represents the multisig address of custodians, so the available value may vary
+depending on the CCToken's daily management. Therefore, **it is essential to always verify if the address has been updated**.
+
+The current multisig address of custodians are:
+
+> The multisig address of cusodians:
+>
+> - Mainnet: ckb1qzdcr9un5ezx8tkh03s46m9jymh22jruelq8svzr5krj2nx69dhjvqgxvm0a2jw0q85l0mf687m7ksdkyj5cejaxqqpthcud
+> - Testnet: ckt1qpa0qahsffdrsxtuu97tc2u2wzwaeel3dc7fjjm3vurvtggrggqquqgx2a48py5vhs2ew4g9tsr988r9mvtz8xn8qq388fz6
