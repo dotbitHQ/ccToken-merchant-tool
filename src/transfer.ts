@@ -3,7 +3,7 @@ import { default as CKB } from '@nervosnetwork/ckb-sdk-core'
 import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 import { addressToScript } from '@nervosnetwork/ckb-sdk-utils'
 
-import { deepClone, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, toXudtCell, u128ToLEHex } from './util'
+import { addCapacity, deepClone, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, toXudtCell, u128ToLEHex } from './util'
 import { CONTEXT, XUDT_CELL_CAPACITY } from './const'
 
 export async function transferCommand(options: any, _command: Command) {
@@ -109,6 +109,20 @@ export async function transferCommand(options: any, _command: Command) {
     rawTx.outputs.splice(1, 0, deepClone(rawTx.outputs[0]))
     rawTx.outputsData.splice(1, 0, u128ToLEHex(xudtChange))
     rawTx.outputs[1].lock = addressToScript(CONTEXT.merchantAddress)
+
+    // Collect the capacity of inputs[0] as change and add it to the change cell
+    rawTx.outputs[2].capacity = addCapacity(rawTx.outputs[2].capacity, XUDT_CELL_CAPACITY)
+  } else {
+    // Collect the capacity of inputs[0] as change and add it to the change cell
+    if (rawTx.outputs.length > 1) {
+      rawTx.outputs[1].capacity = addCapacity(rawTx.outputs[1].capacity, XUDT_CELL_CAPACITY)
+    } else {
+      rawTx.outputs[1] = deepClone(rawTx.outputs[0])
+      rawTx.outputs[1].capacity = `0x${XUDT_CELL_CAPACITY.toString(16)}`
+      rawTx.outputs[1].lock = addressToScript(CONTEXT.merchantAddress)
+      rawTx.outputs[1].type = null
+      rawTx.outputsData[1] = '0x'
+    }
   }
 
   // 0x007472616e73666572 represents [prefix, transfer] in binary format,

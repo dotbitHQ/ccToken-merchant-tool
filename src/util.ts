@@ -400,3 +400,8 @@ export function u128ToLEHex(num: bigint) {
   const leHex = leBuffer.toString('hex');
   return '0x' + leHex;
 }
+
+export function addCapacity(current: string, increment: bigint) {
+  let capacity = BigInt(current) + increment
+  return `0x${capacity.toString(16)}`
+}
