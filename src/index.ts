@@ -2,6 +2,7 @@ import { program, Command } from 'commander'
 import 'dotenv/config'
 
 import { mintCommand } from './mint'
+import { burnCommand } from './burn'
 import { transferCommand } from './transfer'
 import { setupContext } from './util'
 
@@ -25,10 +26,11 @@ program.command('mint')
 // Burn command
 program.command('burn')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
+  .option('-t, --to <address>', 'The multisig CKB address of the custodians.')
   .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')
   .action(async (options: any, command: Command) => {
     await setupContext(command.parent?.opts())
-    // await burnCommand(options, command)
+    await burnCommand(options, command)
   })
 
 // Transfer command

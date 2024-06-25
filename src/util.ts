@@ -312,7 +312,7 @@ export function genTickCellData(type: string, merchantAddress: string, tokenId: 
 
   const tickMol = Buffer.from(types.SerializeTick({
     // 0x00 represents this is a mint tick
-    tick_type: toArrayBuffer(Buffer.from([ type == 'mint' ? 0 : 1 ])),
+    tick_type: type == 'mint' ? 0 : 1,
     token_id: toArrayBuffer(Buffer.from(tokenId.slice(2), 'hex')),
     value: toArrayBuffer(valueBuffer, 16), // 100000000 sats in LE == 1 ccBTC
     merchant: merchantLockMol,

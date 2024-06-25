@@ -29,6 +29,7 @@ export const MAINNET = {
     typeId: '0x2e01a6db6d332607e2b604cb58104678bd7bb3a2d5093418cdc53be976c8a18b',
   },
   alwaysSuccessAddress: 'ckb1qqcratfhhe0whl8n2pyyw9248r9kyw3x7gmkp80jf0ffvagvzgc8sqgdzm4fw',
+  custodiansOmniLockAddress: 'ckb1qzdcr9un5ezx8tkh03s46m9jymh22jruelq8svzr5krj2nx69dhjvqgxvm0a2jw0q85l0mf687m7ksdkyj5cejaxqqpthcud',
   tokenId: {
     'BTC': '0x68e64ba4b0daeeec45c1f983d6d574fca370442cafb805bc4265ef74870a4ac8'
   },
@@ -77,6 +78,7 @@ export const TESTNET: NetworkParams = {
     typeId: '0x2022bdd02de3fc45e8776d2f0416cd887935c01c981a9e496fc74c00f7062f97',
   },
   alwaysSuccessAddress: 'ckt1qzqmth635x0qaytkuujgmdrrc67zlgd0c57u2727gyp6xdnskzlj7qgh6rt3u',
+  custodiansOmniLockAddress: 'ckt1qpa0qahsffdrsxtuu97tc2u2wzwaeel3dc7fjjm3vurvtggrggqquqgx2a48py5vhs2ew4g9tsr988r9mvtz8xn8qq388fz6',
   tokenId: {
     'BTC': '0x5f1c45bd6d5c7f78ac29e9559a62dc3751a516ff2d276460845c82d08378a310'
   },
