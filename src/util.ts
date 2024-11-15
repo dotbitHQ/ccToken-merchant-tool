@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { addressToScript } from '@nervosnetwork/ckb-sdk-utils'
+import { addressToScript, serializeOutput } from '@nervosnetwork/ckb-sdk-utils'
 import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 import resultFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/resultFormatter'
 
@@ -298,7 +298,7 @@ export function toXudtCell(cell: any, xudtCellTypeId: string, tokenId: string) {
   return cell
 }
 
-export function genTickCellData(type: string, merchantAddress: string, tokenId: string, coinType: string, value: BigInt, txHash?: string) {
+export function genTickCellData(type: string, merchantAddress: string, tokenId: string, coinType: string, value: BigInt, txHash?: string, receiptAddr?: string) {
   const merchantLock = addressToScript(merchantAddress)
   const merchantLockMol = {
     code_hash: toArrayBuffer(Buffer.from(merchantLock.codeHash.slice(2), 'hex')),
@@ -320,7 +320,7 @@ export function genTickCellData(type: string, merchantAddress: string, tokenId: 
     coin_type: toArrayBuffer(Buffer.from(coinType, 'utf-8')),
     tx_hash: txHash ? toArrayBuffer(Buffer.from(txHash, 'utf-8')) : new ArrayBuffer(0),
     // This field can be empty when request mint.
-    receipt_addr: toArrayBuffer(Buffer.from([])),
+    receipt_addr: toArrayBuffer(Buffer.from(receiptAddr ?? '', 'utf-8')),
   }))
   const version = Buffer.from([0])
   const tickCellData = Buffer.concat([version, tickMol]);
@@ -404,4 +404,15 @@ export function u128ToLEHex(num: bigint) {
 export function addCapacity(current: string, increment: bigint) {
   let capacity = BigInt(current) + increment
   return `0x${capacity.toString(16)}`
+}
+
+export function updateCellCapacity(cell: CKBComponents.CellOutput, data: string) {
+  let serializedCell = serializeOutput(cell)
+  let cellSize = Buffer.from(serializedCell.slice(2), 'hex').length;
+  let dataSize = Buffer.from(data.slice(2), 'hex').length;
+  let capacity = BigInt(cellSize + dataSize) * BigInt(100000000)
+  console.log('capacity:', capacity)
+  cell.capacity = '0x' + capacity.toString(16)
+
+  console.log('updated cell:', cell)
 }

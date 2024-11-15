@@ -11,7 +11,7 @@ After building it will create 3 binariesin the `build/` directory for each platf
 
 ### Prerequisites
 
-- Nodejs(>=18) installed, and the `npm` command can work properly.
+- Nodejs(>=20) installed, and the `npm` command can work properly.
 - Good network connection to npm registry.
 
 ### Building
@@ -22,6 +22,8 @@ npm run build
 ```
 
 You may see a lot of warning after building, but it is safe to ignore them. They are cause by the `axios` in `node_modules/`, but the binary is built from single file in `dist/` which is bundled by webpack.
+
+The final binaries are in the `build/` directory.
 
 
 ## Usage
@@ -99,6 +101,7 @@ To burn 0.1 BTC token, and the private key is passed as environment variable, on
 burn \
 --to ckt1... \
 --coin-type BTC \
+--receipt_addr tb1... \
 --value 10000000
 ```
 
@@ -111,3 +114,5 @@ The current multisig address of custodians are:
 >
 > - Mainnet: ckb1qzdcr9un5ezx8tkh03s46m9jymh22jruelq8svzr5krj2nx69dhjvqgxvm0a2jw0q85l0mf687m7ksdkyj5cejaxqqpthcud
 > - Testnet: ckt1qpa0qahsffdrsxtuu97tc2u2wzwaeel3dc7fjjm3vurvtggrggqquqgx2a48py5vhs2ew4g9tsr988r9mvtz8xn8qq388fz6
+
+The `--receipt_addr` parameter is the receipt address of the BTC, the address WILL NOT BE VERIFIED, please make sure it is in the your whitelist on the CCToken's platform.

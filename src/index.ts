@@ -30,6 +30,7 @@ program.command('burn')
   .option('-c, --coin-type [type]', 'The coin type defined by Cactus Custody.[available: BTC]', 'BTC')
   .option('-t, --to <address>', 'The multisig CKB address of the custodians.')
   .option('-v, --value <value>', 'The value of the {CoinType} token to mint.(Be aware this value is in minimum unit of the token, e.g. 1 ccBTC = 100000000 sats. And service fee should be deducted, e.g. deposit 1 BTC to mint 0.999 BTC)')
+  .option('-r, --receipt-addr <value>', 'The receipt address of the {CoinType} token, the address WILL NOT BE VERIFIED, please make sure it is the correct one.')
   .action(async (options: any, command: Command) => {
     await setupContext(command.parent?.opts())
     await burnCommand(options, command)

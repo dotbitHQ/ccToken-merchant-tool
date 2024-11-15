@@ -3,8 +3,8 @@ import { default as CKB } from '@nervosnetwork/ckb-sdk-core'
 import paramsFormatter from '@nervosnetwork/ckb-sdk-rpc/lib/paramsFormatter'
 import { addressToScript } from '@nervosnetwork/ckb-sdk-utils'
 
-import { addCapacity, deepClone, findConfigCell, findGovernanceMemberCell, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, genTickCellData, toTickCell, toXudtCell, u128ToLEHex } from './util'
-import { CONTEXT, TICK_CELL_CAPACITY, XUDT_CELL_CAPACITY } from './const'
+import { addCapacity, deepClone, findConfigCell, findGovernanceMemberCell, findMerchantNormalCells, findMerchantXudtCells, findTypeScriptOutPoint, genTickCellData, toTickCell, toXudtCell, u128ToLEHex, updateCellCapacity } from './util'
+import { BUFFER_CAPACITY, CONTEXT, TICK_CELL_CAPACITY, XUDT_CELL_CAPACITY } from './const'
 
 export async function burnCommand(options: any, _command: Command) {
   if (CONTEXT.verbose) {
@@ -63,7 +63,8 @@ export async function burnCommand(options: any, _command: Command) {
 
   // If the change exists, we need to create an additional XudtCell.
   function getRequiredCellCapacity(): bigint {
-    return TICK_CELL_CAPACITY + (xudtChange > 0 ? (BigInt(2) * XUDT_CELL_CAPACITY) : XUDT_CELL_CAPACITY)
+    // The buffer capacity is used to cover the additional capacity of the TickCell.
+    return TICK_CELL_CAPACITY + (xudtChange > 0 ? (BigInt(2) * XUDT_CELL_CAPACITY) : XUDT_CELL_CAPACITY) + BUFFER_CAPACITY
   }
 
   const normalCells: any[] = await findMerchantNormalCells(CONTEXT.merchantAddress, getRequiredCellCapacity() + CONTEXT.fee)
@@ -128,7 +129,8 @@ export async function burnCommand(options: any, _command: Command) {
 
   // Create the TickCell
   rawTx.outputs[0] = toTickCell(rawTx.outputs[0], networkParams.tickCellType.typeId)
-  rawTx.outputsData[0] = genTickCellData('burn', CONTEXT.merchantAddress, tokenId, options.coinType, BigInt(options.value))
+  rawTx.outputsData[0] = genTickCellData('burn', CONTEXT.merchantAddress, tokenId, options.coinType, BigInt(options.value), "", options.receiptAddr)
+  updateCellCapacity(rawTx.outputs[0], rawTx.outputsData[0])
 
   // Create the XudtCell
   rawTx.outputs[1] = toXudtCell(rawTx.outputs[1], networkParams.xudtCellType.typeId, tokenId)

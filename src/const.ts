@@ -1,6 +1,6 @@
-// 551CKB as the basic occupied capacity of the TickCell
-export const TICK_CELL_CAPACITY = BigInt(55100000000)
-export const XUDT_CELL_CAPACITY = BigInt(14400000000)
+export const TICK_CELL_CAPACITY = BigInt(55100000000) // 551CKB not accurate
+export const XUDT_CELL_CAPACITY = BigInt(14400000000) // 144CKB
+export const BUFFER_CAPACITY = BigInt(100000000000) // 1000 CKB
 
 export type NetworkParams = typeof MAINNET
 

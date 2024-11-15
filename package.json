@@ -9,7 +9,7 @@
     "dev": "ts-node ./src/index.ts",
     "test:dist": "node ./dist/index.js",
     "build:bundle": "webpack -c ./webpack.conf.js",
-    "build:pkg": "pkg --out-path build/ .",
+    "build:pkg": "pkg -t node*-linux-x64,node*-win-x64 --out-path build/ .",
     "build": "npm run build:bundle && npm run build:pkg"
   },
   "dependencies": {
