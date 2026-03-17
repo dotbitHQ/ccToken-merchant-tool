@@ -37,7 +37,7 @@ export const MAINNET = {
     // joy-id
     {
       outPoint: {
-        txHash: '0xf05188e5f3a6767fc4687faf45ba5f1a6e25d3ada6129dae8722cb282f262493',
+        txHash: '0x06d4b4cc802115633b0ed89fac859504b1c08c93869ee9748b1d17c1d0e149ae',
         index: '0x0'
       },
       depType: 'depGroup'
